@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saurav Dutta - Interactive Resume</title>
+    <!-- Chosen Palette: Calm Harmony Neutrals -->
+    <!-- Application Structure Plan: A single-page application with a sticky top navigation bar for easy access to different content sections (About, Skills, Experience, Projects, Certifications, AI Assistant). The structure is designed for a recruiter's journey: start with a high-level profile, dive into a visual skills dashboard, see the application of those skills in a chronological experience/project timeline, view formal qualifications, and finally interact with an AI assistant for quick answers. This non-linear, thematic structure is more usable and engaging than a simple document scroll, allowing users to quickly access the information most relevant to them and get immediate clarifications. -->
+    <!-- Visualization & Content Choices: 
+        - Profile Info -> Goal: Inform -> Presentation: Clean text block -> Justification: Direct and clear summary.
+        - Skills List -> Goal: Compare & Organize -> Viz: Horizontal Bar Chart (Chart.js) -> Interaction: Visual representation of proficiency -> Justification: More engaging and easier to digest than a flat list, provides a dashboard-like feel.
+        - Experience & Projects -> Goal: Show change/growth -> Viz: Vertical Timeline (HTML/CSS) -> Interaction: Hover effects on timeline items -> Justification: Intuitively represents career progression and contextualizes projects within work history.
+        - Certifications -> Goal: Organize & Inform -> Viz: Card Grid (HTML/CSS) -> Interaction: Hover effects for visual feedback -> Justification: A clean, standard way to present distinct items of information.
+        - AI Assistant -> Goal: Inform/Clarify -> Viz: Text Input/Output -> Interaction: User asks questions, LLM provides answers from resume context -> Justification: Provides quick, targeted information retrieval from the resume, enhancing recruiter efficiency and engagement.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F7F4;
+            color: #2c3e50;
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 450px;
+            width: 100%;
+            max-width: 800px;
+        }
+        .nav-link {
+            transition: color 0.3s;
+        }
+        .nav-link:hover {
+            color: #4DB6AC;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            left: -8px;
+            top: 0;
+            background-color: #4DB6AC;
+            border: 3px solid #F8F7F4;
+        }
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #4DB6AC;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 8px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header & Navigation -->
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-gray-800">Saurav Dutta</h1>
+            <nav class="hidden md:flex space-x-8">
+                <a href="#about" class="nav-link text-gray-600 font-medium">About</a>
+                <a href="#skills" class="nav-link text-gray-600 font-medium">Skills</a>
+                <a href="#experience" class="nav-link text-gray-600 font-medium">Experience</a>
+                <a href="#projects" class="nav-link text-gray-600 font-medium">Projects</a>
+                <a href="#certifications" class="nav-link text-gray-600 font-medium">Certifications</a>
+                <a href="#ai-assistant" class="nav-link text-gray-600 font-medium">AI Assistant</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <!-- About Section -->
+        <section id="about" class="text-center mb-24">
+            <h2 class="text-4xl font-bold mb-4">Data Science Intern Applicant</h2>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600">
+                A dedicated and results-oriented college student with a strong foundation in Python programming, data analysis, and machine learning. Proven ability to deliver data-driven solutions and create impactful visualizations. Passionate about leveraging data science to solve real-world problems and committed to continuous learning in Cloud Computing, Data Science, and Power BI.
+            </p>
+            <div class="mt-8 flex justify-center space-x-4">
+                <a href="mailto:sauravduttatsk276@gmail.com" class="bg-[#4DB6AC] text-white font-bold py-2 px-4 rounded-full hover:bg-[#409b90] transition-colors">Contact Me</a>
+                <a href="https://sauravduttag.wixsite.com/my-site" target="_blank" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-full hover:bg-gray-300 transition-colors">View Portfolio</a>
+            </div>
+        </section>
+
+        <!-- Skills Section -->
+        <section id="skills" class="mb-24">
+            <h2 class="text-3xl font-bold text-center mb-2">Technical Skills Dashboard</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">This chart provides a visual overview of my technical abilities across different domains. It highlights my proficiency in key areas required for a data science role, from programming and data visualization to machine learning.</p>
+            <div class="bg-white p-4 sm:p-8 rounded-xl shadow-lg">
+                <div class="chart-container">
+                    <canvas id="skillsChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experience Section -->
+        <section id="experience" class="mb-24">
+            <h2 class="text-3xl font-bold text-center mb-12">Professional Experience & Education</h2>
+             <div class="max-w-3xl mx-auto">
+                <div class="relative border-l-2 border-gray-200 pl-8">
+                    
+                    <!-- Student Intern -->
+                    <div class="mb-12 timeline-item">
+                        <p class="font-bold text-sm text-[#4DB6AC]">SUMMER 2024</p>
+                        <h3 class="text-xl font-bold mt-1">Student Intern</h3>
+                        <p class="text-md text-gray-500 mb-2">JIST, Jorhat</p>
+                        <ul class="list-disc list-inside text-gray-600">
+                            <li>Developed a predictive model for real-time car prices, achieving estimated accuracy for market value predictions.</li>
+                            <li>Integrated the model into a user-friendly website, assisting users in making informed purchasing decisions.</li>
+                        </ul>
+                    </div>
+                     <!-- Freelancer -->
+                    <div class="mb-12 timeline-item">
+                        <p class="font-bold text-sm text-[#4DB6AC]">2023 - PRESENT</p>
+                        <h3 class="text-xl font-bold mt-1">Freelance Professional</h3>
+                        <p class="text-md text-gray-500 mb-2">Online Platforms (Freelancer.com)</p>
+                        <ul class="list-disc list-inside text-gray-600">
+                            <li>Completed multiple projects involving Python coding and data analysis.</li>
+                            <li>Applied data analysis techniques using MS Excel to derive insights for clients.</li>
+                            <li>Managed projects, ensuring on-time delivery and client satisfaction.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Education -->
+                    <div class="mb-12 timeline-item">
+                        <p class="font-bold text-sm text-[#4DB6AC]">2022 - 2026</p>
+                        <h3 class="text-xl font-bold mt-1">BTech in Electronics Engineering</h3>
+                        <p class="text-md text-gray-500 mb-2">JIST, Jorhat, Assam (CGPA: 8.0/10.0)</p>
+                    </div>
+
+                    <div class="timeline-item">
+                        <p class="font-bold text-sm text-[#4DB6AC]">2020 - 2021</p>
+                        <h3 class="text-xl font-bold mt-1">12th Grade</h3>
+                        <p class="text-md text-gray-500 mb-2">VKV, Tinsukia, Assam (Percentage: 84%)</p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section id="projects" class="mb-24">
+            <h2 class="text-3xl font-bold text-center mb-2">Key Projects</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">These projects demonstrate my ability to apply theoretical knowledge to build practical, end-to-end solutions. From natural language processing to game development, I enjoy tackling diverse challenges.</p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                    <h3 class="font-bold text-xl mb-2">Text Paraphrasing for Low Resource Languages</h3>
+                    <p class="text-gray-600 mb-4">Leveraged the IndicBART model to create a paraphrasing tool for Bengali and Assamese, tackling challenges in underrepresented linguistic data through advanced NLP and model fine-tuning.</p>
+                    <span class="inline-block bg-teal-100 text-teal-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">NLP</span>
+                    <span class="inline-block bg-teal-100 text-teal-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">Python</span>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                    <h3 class="font-bold text-xl mb-2">Python Football Game (FIFA-style)</h3>
+                    <p class="text-gray-600 mb-4">Developed a 2D football game from scratch with Pygame, featuring 5v5 gameplay, real-time physics, AI opponents, and a modular, object-oriented architecture.</p>
+                    <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">Pygame</span>
+                    <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">Python</span>
+                     <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">OOP</span>
+                </div>
+                 <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow md:col-span-2">
+                    <h3 class="font-bold text-xl mb-2">Agricultural Disease Identification App</h3>
+                    <p class="text-gray-600 mb-4">Designed and developed a mobile application that enables farmers to identify various potato diseases (late blight, early blight, healthy) by analyzing leaf images, helping to potentially reduce crop loss through early detection.</p>
+                    <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">Mobile App Dev</span>
+                    <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">UI/UX</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Certifications Section -->
+        <section id="certifications" class="mb-24">
+            <h2 class="text-3xl font-bold text-center mb-2">Certifications & Licenses</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">I am committed to continuous learning and professional development. These certifications validate my skills in key areas of data science and cloud computing.</p>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                 <div class="bg-white p-6 rounded-xl shadow-md text-center">
+                    <h3 class="font-bold text-lg">Infosys Certified</h3>
+                    <p class="text-gray-500">Python for Data Science</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md text-center">
+                    <h3 class="font-bold text-lg">Microsoft Certified</h3>
+                    <p class="text-gray-500">Power BI Data Analyst Associate</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md text-center">
+                    <h3 class="font-bold text-lg">AWS Certified</h3>
+                    <p class="text-gray-500">Cloud Practitioner Essentials</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Assistant Section -->
+        <section id="ai-assistant" class="mb-12">
+            <h2 class="text-3xl font-bold text-center mb-2">AI Assistant ✨</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Ask me anything about my resume! This AI assistant can quickly retrieve and summarize information directly from the content above.</p>
+            <div class="bg-white p-6 rounded-xl shadow-lg max-w-2xl mx-auto">
+                <div class="mb-4">
+                    <label for="questionInput" class="block text-gray-700 text-sm font-bold mb-2">Your Question:</label>
+                    <textarea id="questionInput" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline resize-none" rows="3" placeholder="e.g., What machine learning libraries is Saurav familiar with?"></textarea>
+                </div>
+                <div class="flex items-center justify-end">
+                    <button id="askButton" class="bg-[#4DB6AC] text-white font-bold py-2 px-4 rounded-full hover:bg-[#409b90] transition-colors">
+                        Ask AI ✨
+                    </button>
+                    <span id="loadingIndicator" class="loading-spinner hidden"></span>
+                </div>
+                <div id="responseArea" class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200 text-gray-700 min-h-[100px]">
+                    <p class="text-gray-500 italic">Your answers will appear here...</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white">
+        <div class="container mx-auto px-6 py-8 text-center">
+            <h3 class="text-2xl font-bold mb-2">Let's Connect</h3>
+            <p class="mb-4">Open to new opportunities and collaborations.</p>
+            <div class="flex justify-center space-x-4">
+                 <a href="mailto:sauravduttatsk276@gmail.com" class="text-gray-300 hover:text-white transition-colors">sauravduttatsk276@gmail-duttatsk276@gmail.com</a>
+                 <span>&bull;</span>
+                 <a href="https://www.linkedin.com" target="_blank" class="text-gray-300 hover:text-white transition-colors">LinkedIn</a>
+                 <span>&bull;</span>
+                 <a href="https://sauravduttag.wixsite.com/my-site" target="_blank" class="text-gray-300 hover:text-white transition-colors">Portfolio</a>
+            </div>
+        </div>
+    </footer>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('skillsChart').getContext('2d');
+            
+            const skillsData = {
+                labels: [
+                    'Python', 'Scikit-learn', 'Pandas', 'NumPy', 
+                    'Power BI', 'Matplotlib', 'Seaborn', 'MS Excel', 'EDA',
+                    'Predictive Modeling', 'Feature Engineering', 'NLP',
+                    'Pygame', 'Firebase'
+                ],
+                datasets: [{
+                    label: 'Proficiency',
+                    data: [
+                        90, 80, 85, 85, // Programming
+                        90, 75, 75, 80, 85, // Data Analysis & Viz
+                        85, 80, 75, // Machine Learning
+                        70, 70 // Tools
+                    ],
+                    backgroundColor: [
+                        '#4DB6AC', '#4DB6AC', '#4DB6AC', '#4DB6AC',
+                        '#5D9CEC', '#5D9CEC', '#5D9CEC', '#5D9CEC', '#5D9CEC',
+                        '#FF8A65', '#FF8A65', '#FF8A65',
+                        '#FFC107', '#FFC107'
+                    ],
+                    borderColor: '#ffffff',
+                    borderWidth: 2,
+                    borderRadius: 4
+                }]
+            };
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: skillsData,
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: '#2c3e50',
+                            titleFont: { size: 14, weight: 'bold' },
+                            bodyFont: { size: 12 },
+                            callbacks: {
+                                label: function(context) {
+                                    return `Proficiency: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + "%"
+                                },
+                                color: '#6b7280'
+                            },
+                            grid: {
+                                color: '#e5e7eb'
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: '#374151',
+                                font: {
+                                    weight: '500'
+                                }
+                            },
+                             grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Smooth scroll for nav links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            // AI Assistant Logic
+            const questionInput = document.getElementById('questionInput');
+            const askButton = document.getElementById('askButton');
+            const responseArea = document.getElementById('responseArea');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+
+            // Extract relevant resume content to send to LLM
+            const resumeContent = `
+                Saurav Dutta - Data Science Intern Applicant Resume:
+
+                PROFILE:
+                A dedicated and results-oriented college student with a strong foundation in Python programming, data analysis, and machine learning. Proven ability to deliver data-driven solutions and create impactful visualizations. Passionate about leveraging data science to solve real-world problems and committed to continuous learning in Cloud Computing, Data Science, and Power BI.
+
+                EDUCATION:
+                JIST, JORHAT, ASSAM: BTech in Electronics Engineering | 2022 – 2026 (CGPA: 8.0/10.0)
+                VKV, TINSUKIA, ASSAM: 12th Grade | 2020 – 2021 (Percentage: 84%)
+
+                SKILLS:
+                Programming Languages: Python (NumPy, Pandas, Scikit-learn)
+                Data Analysis & Visualization: Power BI, MS Excel, Matplotlib, Seaborn, Exploratory Data Analysis (EDA)
+                Machine Learning: Predictive Modeling, Feature Engineering, Natural Language Processing (NLP)
+                Tools & Platforms: Canva, Microsoft Power BI Desktop, Firebase, Pygame
+                Soft Skills: Analytical Thinking, Problem-Solving, Effective Communication, Teamwork, Time Management, Leadership
+
+                WORK EXPERIENCE:
+                Student Intern | JIST, Jorhat | SUMMER 2024:
+                - Developed a predictive model for real-time car prices, achieving estimated accuracy for market value predictions.
+                - Integrated the model into a user-friendly website, assisting users in making informed purchasing decisions.
+
+                Student Developer | JIST, Jorhat | 2022 - 2026 (Ongoing):
+                - Designed and developed a mobile application for agricultural use, enabling farmers to identify potato diseases (late blight, early blight, healthy plants) by examining leaves, potentially reducing crop loss.
+                - Implemented a user-friendly interface to ensure ease of access and adoption by a diverse user base.
+
+                Freelance Professional | Online Platforms (Freelancer.com) | 2023 – PRESENT:
+                - Successfully completed multiple projects involving Python coding and data analysis.
+                - Applied data analysis techniques using MS Excel to derive insights for diverse client requirements.
+                - Managed a portfolio of projects, demonstrating strong time management and client communication skills.
+
+                PROJECTS:
+                Text Paraphrasing of Low Resource Languages (Bengali/Assamese) using IndicBART model:
+                - Researched and implemented a text paraphrasing solution for low-resource languages (Bengali/Assamese) utilizing the IndicBART model.
+                - This project involved advanced Natural Language Processing (NLP) techniques and model fine-tuning to address challenges specific to underrepresented linguistic data.
+
+                Python Football Game (FIFA-style) using Pygame:
+                - Developed a 2D arcade-style football game from scratch using Python and Pygame, demonstrating strong object-oriented programming skills.
+                - Implemented core game mechanics including 5v5 player gameplay, real-time ball physics, player switching, goal detection, score system, and a countdown timer.
+                - Designed with modular game architecture and incorporated AI opponents for an interactive user experience.
+
+                Agricultural Disease Identification App:
+                - Designed and developed a mobile application that enables farmers to identify various potato diseases (late blight, early blight, healthy) by analyzing leaf images, helping to potentially reduce crop loss through early detection.
+
+                CERTIFICATIONS AND LICENSES:
+                Infosys Certified: Python for Data Science:
+                - Applied various machine learning algorithms for predictive analysis on real datasets.
+                - Performed feature engineering and visualized datasets in 2D/3D to enhance insights and appeal.
+                - Utilized NumPy for array and matrix operations, including treating images as matrices and solving linear algebra problems.
+
+                Microsoft Certified: Power BI Data Analyst Associate:
+                - Demonstrated proficiency in creating engaging visuals and reports using Power BI.
+                - Gained expertise in data modeling and transformation techniques, integrating diverse data sources to build dynamic dashboards.
+
+                AWS Cloud Practitioner Essentials:
+                - Understood AWS infrastructure and benefits, differentiating cloud deployment types and identifying solutions for cost management.
+
+                LANGUAGES:
+                English: Fluent
+                Bengali: Expert
+                Hindi: Expert
+
+                HOBBIES:
+                Outdoor games (football, cricket), FC Barcelona fan.
+            `;
+
+            askButton.addEventListener('click', async () => {
+                const question = questionInput.value.trim();
+                if (!question) {
+                    responseArea.innerHTML = '<p class="text-red-500">Please enter a question.</p>';
+                    return;
+                }
+
+                responseArea.innerHTML = '';
+                loadingIndicator.classList.remove('hidden');
+                askButton.disabled = true;
+
+                try {
+                    const prompt = `Based *only* on the following resume content, answer the question: "${question}". If the information is not directly available in the resume, please state that.
+
+                    Resume Content:
+                    ${resumeContent}`;
+
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = "";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                    const response = await fetch(apiUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
+                            });
+                    
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        responseArea.innerHTML = `<p>${text}</p>`;
+                    } else {
+                        responseArea.innerHTML = '<p class="text-red-500">Could not get a response from the AI assistant. Please try again.</p>';
+                    }
+                } catch (error) {
+                    console.error('Error fetching AI response:', error);
+                    responseArea.innerHTML = '<p class="text-red-500">An error occurred while fetching the response. Please check the console for details.</p>';
+                } finally {
+                    loadingIndicator.classList.add('hidden');
+                    askButton.disabled = false;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
